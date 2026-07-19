@@ -1,0 +1,86 @@
+{
+  "venues": [
+    {
+      "id": "metlife",
+      "name": "MetLife Stadium",
+      "city": "New York / New Jersey, USA",
+      "capacity": 82500,
+      "nodes": {
+        "gate_a": {"label": "Gate A (North)", "type": "gate", "step_free": true},
+        "gate_b": {"label": "Gate B (East)", "type": "gate", "step_free": true},
+        "gate_c": {"label": "Gate C (South)", "type": "gate", "step_free": false},
+        "gate_d": {"label": "Gate D (West)", "type": "gate", "step_free": true},
+        "concourse_n": {"label": "North Concourse", "type": "concourse", "step_free": true},
+        "concourse_e": {"label": "East Concourse", "type": "concourse", "step_free": true},
+        "concourse_s": {"label": "South Concourse", "type": "concourse", "step_free": true},
+        "concourse_w": {"label": "West Concourse", "type": "concourse", "step_free": true},
+        "sec_101": {"label": "Section 101 (Lower North)", "type": "section", "step_free": true},
+        "sec_115": {"label": "Section 115 (Lower East)", "type": "section", "step_free": true},
+        "sec_130": {"label": "Section 130 (Lower South)", "type": "section", "step_free": false},
+        "sec_144": {"label": "Section 144 (Lower West)", "type": "section", "step_free": true},
+        "food_n": {"label": "North Food Court", "type": "food", "step_free": true},
+        "food_s": {"label": "South Food Court", "type": "food", "step_free": true},
+        "wc_n": {"label": "North Restrooms", "type": "restroom", "step_free": true},
+        "wc_e": {"label": "East Restrooms (Accessible)", "type": "restroom", "step_free": true},
+        "aid_1": {"label": "First Aid Station 1", "type": "first_aid", "step_free": true},
+        "sensory_room": {"label": "Sensory Room", "type": "accessibility", "step_free": true},
+        "transit_hub": {"label": "Rail & Shuttle Hub", "type": "transport", "step_free": true}
+      },
+      "edges": [
+        ["gate_a", "concourse_n", 2],
+        ["gate_b", "concourse_e", 2],
+        ["gate_c", "concourse_s", 2],
+        ["gate_d", "concourse_w", 2],
+        ["concourse_n", "concourse_e", 4],
+        ["concourse_e", "concourse_s", 4],
+        ["concourse_s", "concourse_w", 4],
+        ["concourse_w", "concourse_n", 4],
+        ["concourse_n", "sec_101", 1],
+        ["concourse_e", "sec_115", 1],
+        ["concourse_s", "sec_130", 1],
+        ["concourse_w", "sec_144", 1],
+        ["concourse_n", "food_n", 1],
+        ["concourse_s", "food_s", 1],
+        ["concourse_n", "wc_n", 1],
+        ["concourse_e", "wc_e", 1],
+        ["concourse_e", "aid_1", 1],
+        ["concourse_w", "sensory_room", 1],
+        ["gate_a", "transit_hub", 3],
+        ["gate_d", "transit_hub", 4]
+      ]
+    },
+    {
+      "id": "azteca",
+      "name": "Estadio Azteca",
+      "city": "Mexico City, Mexico",
+      "capacity": 87523,
+      "nodes": {
+        "gate_1": {"label": "Puerta 1 (Norte)", "type": "gate", "step_free": true},
+        "gate_5": {"label": "Puerta 5 (Oriente)", "type": "gate", "step_free": true},
+        "gate_9": {"label": "Puerta 9 (Sur)", "type": "gate", "step_free": false},
+        "concourse_n": {"label": "Explanada Norte", "type": "concourse", "step_free": true},
+        "concourse_e": {"label": "Explanada Oriente", "type": "concourse", "step_free": true},
+        "concourse_s": {"label": "Explanada Sur", "type": "concourse", "step_free": true},
+        "sec_pb1": {"label": "Planta Baja 1", "type": "section", "step_free": true},
+        "sec_pb8": {"label": "Planta Baja 8", "type": "section", "step_free": true},
+        "food_main": {"label": "Zona de Comida Principal", "type": "food", "step_free": true},
+        "wc_n": {"label": "Sanitarios Norte (Accesible)", "type": "restroom", "step_free": true},
+        "aid_1": {"label": "Puesto de Primeros Auxilios", "type": "first_aid", "step_free": true},
+        "transit_hub": {"label": "Estación Tren Ligero", "type": "transport", "step_free": true}
+      },
+      "edges": [
+        ["gate_1", "concourse_n", 2],
+        ["gate_5", "concourse_e", 2],
+        ["gate_9", "concourse_s", 2],
+        ["concourse_n", "concourse_e", 4],
+        ["concourse_e", "concourse_s", 4],
+        ["concourse_n", "sec_pb1", 1],
+        ["concourse_e", "sec_pb8", 1],
+        ["concourse_n", "food_main", 1],
+        ["concourse_n", "wc_n", 1],
+        ["concourse_e", "aid_1", 1],
+        ["gate_1", "transit_hub", 3]
+      ]
+    }
+  ]
+}

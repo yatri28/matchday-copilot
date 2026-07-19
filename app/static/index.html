@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MatchDay Copilot — FIFA World Cup 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --pitch:#0e5c34;        /* stadium turf green */
+    --pitch-deep:#0a4527;
+    --signage:#15181b;      /* wayfinding board charcoal */
+    --paper:#f6f5f0;        /* concourse concrete white */
+    --gate-yellow:#f5b400;  /* gate signage yellow */
+    --line:#d8d6cd;
+    --ok:#1d7a46; --warn:#c07800; --bad:#b3261e;
+    --radius:10px;
+  }
+  *{box-sizing:border-box;margin:0}
+  html{scroll-behavior:smooth}
+  @media (prefers-reduced-motion: reduce){html{scroll-behavior:auto} *{transition:none!important;animation:none!important}}
+  body{
+    font-family:"Archivo",system-ui,sans-serif;
+    background:var(--paper); color:var(--signage);
+    line-height:1.5; min-height:100vh;
+  }
+  .skip{position:absolute;left:-9999px;top:0;background:var(--gate-yellow);padding:.6rem 1rem;font-weight:700;z-index:99}
+  .skip:focus{left:0}
+  a,button,input,select,textarea{font-family:inherit}
+  :focus-visible{outline:3px solid var(--gate-yellow);outline-offset:2px}
+
+  /* ---- Signature: wayfinding signage header ---- */
+  header{
+    background:var(--signage); color:#fff;
+    padding:1.1rem 1.4rem; display:flex; flex-wrap:wrap; gap:1rem;
+    align-items:center; justify-content:space-between;
+    border-bottom:6px solid var(--gate-yellow);
+  }
+  .brand{display:flex;align-items:center;gap:.8rem}
+  .brand .arrow{
+    width:44px;height:44px;background:var(--gate-yellow);border-radius:8px;
+    display:grid;place-items:center;font-size:1.5rem;color:var(--signage);font-weight:900;
+  }
+  .brand h1{
+    font-size:1.15rem;font-weight:800;letter-spacing:.02em;
+    font-stretch:110%;text-transform:uppercase;
+  }
+  .brand small{display:block;font-weight:400;letter-spacing:.14em;font-size:.68rem;color:#c9cdd2;text-transform:uppercase}
+  .controls{display:flex;gap:.6rem;flex-wrap:wrap;align-items:center}
+  .controls label{font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;color:#c9cdd2}
+  select{
+    background:#22262b;color:#fff;border:1px solid #3a4046;border-radius:8px;
+    padding:.45rem .6rem;font-size:.9rem;
+  }
+  .toggle{
+    display:flex;align-items:center;gap:.45rem;background:#22262b;border:1px solid #3a4046;
+    border-radius:8px;padding:.45rem .7rem;font-size:.85rem;cursor:pointer;user-select:none;color:#fff;
+  }
+  .toggle input{accent-color:var(--gate-yellow);width:1.05rem;height:1.05rem}
+
+  /* Signage strip: live venue banner */
+  .strip{
+    background:var(--pitch); color:#fff; padding:.8rem 1.4rem;
+    display:flex; gap:1.4rem; flex-wrap:wrap; align-items:baseline;
+    font-family:"IBM Plex Mono",monospace; font-size:.85rem;
+  }
+  .strip b{font-weight:600;color:var(--gate-yellow)}
+
+  main{max-width:1080px;margin:0 auto;padding:1.6rem 1.2rem;display:grid;gap:1.4rem;grid-template-columns:1.4fr 1fr}
+  @media (max-width:860px){main{grid-template-columns:1fr}}
+  section{background:#fff;border:1px solid var(--line);border-radius:var(--radius);overflow:hidden}
+  section > h2{
+    font-size:.78rem;letter-spacing:.16em;text-transform:uppercase;font-weight:800;
+    padding:.75rem 1rem;background:var(--paper);border-bottom:1px solid var(--line);
+    display:flex;align-items:center;gap:.5rem;
+  }
+  section > h2::before{content:"";width:10px;height:10px;background:var(--gate-yellow);border-radius:2px}
+  .pad{padding:1rem}
+
+  /* Chat */
+  #chat{grid-row:span 2;display:flex;flex-direction:column;min-height:520px}
+  #messages{flex:1;overflow-y:auto;padding:1rem;display:flex;flex-direction:column;gap:.75rem}
+  .msg{max-width:88%;padding:.7rem .9rem;border-radius:12px;font-size:.95rem;white-space:pre-wrap}
+  .msg.user{align-self:flex-end;background:var(--signage);color:#fff;border-bottom-right-radius:3px}
+  .msg.bot{align-self:flex-start;background:var(--paper);border:1px solid var(--line);border-bottom-left-radius:3px}
+  .msg .src{display:block;margin-top:.45rem;font-family:"IBM Plex Mono",monospace;font-size:.66rem;color:#6a6f75;letter-spacing:.06em;text-transform:uppercase}
+  .composer{display:flex;gap:.6rem;padding: .9rem 1rem;border-top:1px solid var(--line)}
+  .composer input{
+    flex:1;border:1.5px solid var(--line);border-radius:8px;padding:.7rem .85rem;font-size:.95rem;background:var(--paper);
+  }
+  .composer input:focus{border-color:var(--pitch)}
+  .btn{
+    background:var(--pitch);color:#fff;border:0;border-radius:8px;padding:.7rem 1.15rem;
+    font-weight:700;font-size:.92rem;cursor:pointer;letter-spacing:.03em;
+  }
+  .btn:hover{background:var(--pitch-deep)}
+  .btn[disabled]{opacity:.55;cursor:wait}
+  .chips{display:flex;gap:.5rem;flex-wrap:wrap;padding:0 1rem .9rem}
+  .chip{
+    background:#fff;border:1.5px solid var(--line);border-radius:999px;padding:.4rem .8rem;
+    font-size:.8rem;cursor:pointer;
+  }
+  .chip:hover{border-color:var(--pitch);color:var(--pitch)}
+
+  /* Crowd board */
+  .zone{display:flex;align-items:center;gap:.7rem;padding:.5rem 0;border-bottom:1px dashed var(--line);font-size:.9rem}
+  .zone:last-child{border-bottom:0}
+  .zone .name{flex:1}
+  .meter{width:110px;height:9px;background:var(--paper);border-radius:6px;overflow:hidden;border:1px solid var(--line)}
+  .meter i{display:block;height:100%}
+  .lvl{font-family:"IBM Plex Mono",monospace;font-size:.68rem;letter-spacing:.06em;text-transform:uppercase;width:70px;text-align:right}
+  .lvl.low{color:var(--ok)} .lvl.moderate{color:var(--warn)} .lvl.high{color:var(--bad)}
+  .advisory{margin-top: .8rem;padding:.7rem .8rem;background:var(--paper);border-left:4px solid var(--gate-yellow);font-size:.88rem;border-radius:0 8px 8px 0}
+
+  /* Route planner */
+  .field{display:grid;gap:.35rem;margin-bottom:.8rem}
+  .field label{font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;font-weight:700;color:#4d5257}
+  .field select{background:var(--paper);color:var(--signage);border:1.5px solid var(--line);width:100%}
+  #routeResult{margin-top:.9rem;font-size:.9rem}
+  #routeResult ol{padding-left:1.2rem;display:grid;gap:.3rem}
+  .route-meta{font-family:"IBM Plex Mono",monospace;font-size:.72rem;color:#4d5257;margin-bottom:.4rem;text-transform:uppercase;letter-spacing:.06em}
+  footer{max-width:1080px;margin:0 auto;padding:0 1.2rem 2rem;font-size:.78rem;color:#6a6f75}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header>
+  <div class="brand">
+    <div class="arrow" aria-hidden="true">↗</div>
+    <h1>MatchDay Copilot<small>FIFA World Cup 2026 · Fan Assistant</small></h1>
+  </div>
+  <div class="controls">
+    <label for="venue">Venue</label>
+    <select id="venue" aria-label="Choose venue"></select>
+    <label for="lang">Language</label>
+    <select id="lang" aria-label="Choose language">
+      <option value="en">English</option><option value="es">Español</option>
+      <option value="fr">Français</option><option value="ar">العربية</option>
+      <option value="pt">Português</option><option value="de">Deutsch</option>
+      <option value="hi">हिन्दी</option>
+    </select>
+    <label class="toggle"><input type="checkbox" id="a11y"> Step-free routes</label>
+  </div>
+</header>
+
+<div class="strip" id="strip" role="status" aria-live="polite">
+  <span>TODAY <b id="stripMatch">—</b></span>
+  <span>FASTEST GATE <b id="stripGate">—</b></span>
+  <span>ASSISTANT <b id="stripMode">…</b></span>
+</div>
+
+<main id="main">
+  <section id="chat" aria-label="Ask the assistant">
+    <h2>Ask the Copilot</h2>
+    <div id="messages" aria-live="polite"></div>
+    <div class="chips" id="chips">
+      <button class="chip">How do I get from Gate A to Section 115?</button>
+      <button class="chip">Which gate has the shortest queue?</button>
+      <button class="chip">Where is the nearest accessible restroom?</button>
+      <button class="chip">When does the match start?</button>
+    </div>
+    <form class="composer" id="askForm">
+      <input id="question" maxlength="500" placeholder="Ask about routes, crowds, food, accessibility…" aria-label="Your question" autocomplete="off" required>
+      <button class="btn" id="askBtn" type="submit">Ask</button>
+    </form>
+  </section>
+
+  <section aria-label="Live crowd levels">
+    <h2>Live Crowd Board</h2>
+    <div class="pad">
+      <div id="zones"></div>
+      <div class="advisory" id="advisory">Loading crowd data…</div>
+    </div>
+  </section>
+
+  <section aria-label="Route planner">
+    <h2>Route Planner</h2>
+    <div class="pad">
+      <div class="field"><label for="from">From</label><select id="from"></select></div>
+      <div class="field"><label for="to">To</label><select id="to"></select></div>
+      <button class="btn" id="routeBtn" type="button">Find route</button>
+      <div id="routeResult" aria-live="polite"></div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  Crowd data is a live-style simulation for demo purposes. The Copilot answers only from venue data —
+  for anything else, please ask a steward.
+</footer>
+
+<script>
+(function(){
+  "use strict";
+  const $ = (id) => document.getElementById(id);
+  let venues = [];
+
+  const api = async (path, opts) => {
+    const res = await fetch(path, opts);
+    if(!res.ok){
+      const body = await res.json().catch(() => ({}));
+      throw new Error(body.detail || ("Request failed (" + res.status + ")"));
+    }
+    return res.json();
+  };
+
+  function currentVenue(){ return $("venue").value; }
+
+  function fillNodes(){
+    const v = venues.find(x => x.id === currentVenue());
+    if(!v) return;
+    for(const sel of [$("from"), $("to")]){
+      sel.innerHTML = "";
+      for(const n of v.nodes){
+        const o = document.createElement("option");
+        o.value = n.id; o.textContent = n.label;
+        sel.appendChild(o);
+      }
+    }
+    $("to").selectedIndex = Math.min(5, $("to").options.length - 1);
+  }
+
+  async function loadVenues(){
+    const data = await api("/api/venues");
+    venues = data.venues;
+    $("venue").innerHTML = "";
+    for(const v of venues){
+      const o = document.createElement("option");
+      o.value = v.id; o.textContent = v.name + " — " + v.city;
+      $("venue").appendChild(o);
+    }
+    fillNodes();
+  }
+
+  async function loadStrip(){
+    try{
+      const [h, m] = await Promise.all([api("/api/health"), api("/api/matches")]);
+      $("stripMode").textContent = h.genai_enabled ? "GenAI (Claude)" : "Offline mode";
+      const match = m.matches.find(x => x.venue_id === currentVenue());
+      $("stripMatch").textContent = match ? (match.home + " vs " + match.away + " · " + match.stage) : "No fixture";
+    }catch(e){ $("stripMode").textContent = "unavailable"; }
+  }
+
+  async function loadCrowd(){
+    try{
+      const data = await api("/api/crowd/" + encodeURIComponent(currentVenue()));
+      const box = $("zones"); box.innerHTML = "";
+      const colors = {low:"var(--ok)", moderate:"var(--warn)", high:"var(--bad)"};
+      for(const z of data.zones){
+        const row = document.createElement("div");
+        row.className = "zone";
+        row.innerHTML =
+          '<span class="name"></span>' +
+          '<span class="meter"><i style="width:' + z.density_pct + '%;background:' + colors[z.level] + '"></i></span>' +
+          '<span class="lvl ' + z.level + '">' + z.level + " " + z.density_pct + "%</span>";
+        row.querySelector(".name").textContent = z.label;
+        box.appendChild(row);
+      }
+      $("advisory").textContent = data.advisory;
+      $("stripGate").textContent = data.least_crowded_gate || "—";
+    }catch(e){ $("advisory").textContent = e.message; }
+  }
+
+  function addMsg(text, who, src){
+    const div = document.createElement("div");
+    div.className = "msg " + who;
+    div.textContent = text;
+    if(src){
+      const s = document.createElement("span");
+      s.className = "src";
+      s.textContent = src === "genai" ? "answered by GenAI" : "answered offline (rule-based)";
+      div.appendChild(s);
+    }
+    $("messages").appendChild(div);
+    $("messages").scrollTop = $("messages").scrollHeight;
+  }
+
+  async function ask(q){
+    addMsg(q, "user");
+    $("askBtn").disabled = true;
+    try{
+      const data = await api("/api/ask", {
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body: JSON.stringify({
+          question: q,
+          venue_id: currentVenue(),
+          language: $("lang").value,
+          accessibility_needs: $("a11y").checked
+        })
+      });
+      addMsg(data.answer, "bot", data.source);
+    }catch(e){
+      addMsg("Sorry — " + e.message, "bot");
+    }finally{
+      $("askBtn").disabled = false;
+    }
+  }
+
+  $("askForm").addEventListener("submit", (e) => {
+    e.preventDefault();
+    const q = $("question").value.trim();
+    if(!q) return;
+    $("question").value = "";
+    ask(q);
+  });
+
+  $("chips").addEventListener("click", (e) => {
+    if(e.target.classList.contains("chip")) ask(e.target.textContent);
+  });
+
+  $("routeBtn").addEventListener("click", async () => {
+    try{
+      const data = await api("/api/navigate", {
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body: JSON.stringify({
+          venue_id: currentVenue(),
+          start: $("from").value,
+          destination: $("to").value,
+          step_free_only: $("a11y").checked
+        })
+      });
+      const box = $("routeResult");
+      if(!data.found){
+        box.textContent = data.note || "No route found.";
+        return;
+      }
+      box.innerHTML = '<div class="route-meta">~' + data.estimated_minutes + " min · " +
+        (data.step_free ? "step-free ✓" : "includes steps") + "</div><ol></ol>";
+      const ol = box.querySelector("ol");
+      for(const s of data.steps){
+        const li = document.createElement("li");
+        li.textContent = s.label;
+        ol.appendChild(li);
+      }
+    }catch(e){ $("routeResult").textContent = e.message; }
+  });
+
+  $("venue").addEventListener("change", () => { fillNodes(); loadCrowd(); loadStrip(); });
+
+  loadVenues().then(() => { loadCrowd(); loadStrip(); });
+  setInterval(loadCrowd, 60000);
+  addMsg("Welcome to MatchDay Copilot! Ask me about routes, crowd levels, food, accessibility or kickoff times — in your language.", "bot");
+})();
+</script>
+</body>
+</html>
